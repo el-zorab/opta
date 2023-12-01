@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Panou comanda relee</title>
+    <style>
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked+.slider {
+            background-color: #2196F3;
+        }
+
+        input:focus+.slider {
+            box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked+.slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        .container {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 10px 30px;
+        }
+
+        .container p {
+            font-size: 1vw;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <p>Releu 1</p>
+        <label class="switch">
+            <input type="checkbox" id="relay_0">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div class="container">
+        <p>Releu 2</p>
+        <label class="switch">
+            <input type="checkbox" id="relay_1">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div class="container">
+        <p>Releu 3</p>
+        <label class="switch">
+            <input type="checkbox" id="relay_2">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div class="container">
+        <p>Releu 4</p>
+        <label class="switch">
+            <input type="checkbox" id="relay_3">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div class="container">
+        <p>Releu 5</p>
+        <label class="switch">
+            <input type="checkbox" id="relay_4">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div class="container">
+        <p>Releu 6</p>
+        <label class="switch">
+            <input type="checkbox" id="relay_5">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div class="container">
+        <p>Releu 7</p>
+        <label class="switch">
+            <input type="checkbox" id="relay_6">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div class="container">
+        <p>Releu 8</p>
+        <label class="switch">
+            <input type="checkbox" id="relay_7">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div class="container">
+        <p>Releu 9</p>
+        <label class="switch">
+            <input type="checkbox" id="relay_8">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div class="container">
+        <p>Releu 10</p>
+        <label class="switch">
+            <input type="checkbox" id="relay_9">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div class="container">
+        <p>Releu 11</p>
+        <label class="switch">
+            <input type="checkbox" id="relay_10">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div class="container">
+        <p>Releu 12</p>
+        <label class="switch">
+            <input type="checkbox" id="relay_11">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div class="container">
+        <p>Activeaza/dezactiveaza hardware interrupts</p>
+        <label class="switch">
+            <input type="checkbox" id="interrupts_button">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        var socket = io();
+        let relay_buttons = [];
+        let interrupts_button = document.getElementById('interrupts_button');
+        
+        for (let i = 0; i < 12; i++) {
+            relay_buttons[i] = document.getElementById(`relay_${i}`);
+            relay_buttons[i].checked = false;
+            relay_buttons[i].addEventListener('change', () => {
+                socket.emit('relay_button_change', { relay: i, state: relay_buttons[i].checked });
+            });
+        }
+
+        interrupts_button.checked = false;
+        interrupts_button.addEventListener('change', () => {
+            socket.emit('interrupts_button_change', interrupts_button.checked);
+        });
+
+        socket.on('update_relay_buttons', relays => {
+            for (let i = 0; i < 12; i++) {
+                relay_buttons[i].checked = relays[i] == 1 ? true : false;
+            }
+        });
+
+        socket.on('update_interrupts_button', state => {
+            interrupts_button.checked = state;
+        });
+    </script>
+</body>
+</html>
