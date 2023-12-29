@@ -48,11 +48,11 @@ const api_send_counter    = [0, 0, 0];
 const OPTA_COUNT = 3;
 const RELAYS_PER_OPTA = 4;
 
-const opta_ips  = ['192.168.0.177', '192.168.0.178', '192.168.0.179'];
+const opta_ips  = ['192.168.11.177', '192.168.11.178', '192.168.11.179'];
 const opta_port = 8088;
 
-const AES_KEY = Buffer.from(fs.readFileSync(path.join(__dirname, 'aes_key'), {encoding: 'utf-8'}), 'hex');
-const HMAC_KEY = Buffer.from(fs.readFileSync(path.join(__dirname, 'hmac_key'), {encoding: 'utf-8'}), 'hex');
+const AES_KEY = Buffer.from(fs.readFileSync(path.join(__dirname, 'aes_key.dat'), {encoding: 'utf-8'}), 'hex');
+const HMAC_KEY = Buffer.from(fs.readFileSync(path.join(__dirname, 'hmac_key.dat'), {encoding: 'utf-8'}), 'hex');
 
 // relay states
 let relays = new Array(OPTA_COUNT * RELAYS_PER_OPTA).fill(0);
@@ -110,6 +110,7 @@ io.on('connection', (socket) => {
     for (let i = 0; i < OPTA_COUNT; i++) {
       api_send(api_send_str, i);
     }
+    socket.broadcast.emit('update_interrupts_button', is_enabled);
   });
 });
 
@@ -178,7 +179,7 @@ function api_receive(payload) {
     for (let i = 0; i < RELAYS_PER_OPTA; i++) {
       relays[opta * RELAYS_PER_OPTA + i] = parseInt(new_relay_states.charAt(i));
     }
-    
+
     // send the relays states to the web client
     io.emit('update_relay_buttons', relays);
   } else if (type == APIReceivedType.ENABLE_BUTTON_INTERRUPTS) {
@@ -201,7 +202,7 @@ function api_receive(payload) {
 function api_send(data, opta) {
   // add API request counter and UNIX timestamp to API data, before encryption
   data = api_send_counter[opta].toString() + ';' + get_timestamp() + ';' + data;
-  
+
   let iv = crypto.randomBytes(IV_SIZE);
   let iv_hex = iv.toString('hex');
   let aes = aes_encrypt_iv(data, iv);
