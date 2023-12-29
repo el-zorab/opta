@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 
@@ -71,7 +72,7 @@
 
 <body>
     <div class="container">
-        <p>Releu 1</p>
+        <p>Lumini public lateral [1]</p>
         <label class="switch">
             <input type="checkbox" id="relay_0">
             <span class="slider"></span>
@@ -79,7 +80,7 @@
     </div>
 
     <div class="container">
-        <p>Releu 2</p>
+        <p>Neoane public galbene [2]</p>
         <label class="switch">
             <input type="checkbox" id="relay_1">
             <span class="slider"></span>
@@ -87,7 +88,7 @@
     </div>
 
     <div class="container">
-        <p>Releu 3</p>
+        <p>Lumini galbene [3]</p>
         <label class="switch">
             <input type="checkbox" id="relay_2">
             <span class="slider"></span>
@@ -95,7 +96,7 @@
     </div>
 
     <div class="container">
-        <p>Releu 4</p>
+        <p>Neoane sus [4]</p>
         <label class="switch">
             <input type="checkbox" id="relay_3">
             <span class="slider"></span>
@@ -103,7 +104,7 @@
     </div>
 
     <div class="container">
-        <p>Releu 5</p>
+        <p>Scena [5]</p>
         <label class="switch">
             <input type="checkbox" id="relay_4">
             <span class="slider"></span>
@@ -111,7 +112,7 @@
     </div>
 
     <div class="container">
-        <p>Releu 6</p>
+        <p>Scena bun [6]</p>
         <label class="switch">
             <input type="checkbox" id="relay_5">
             <span class="slider"></span>
@@ -119,7 +120,7 @@
     </div>
 
     <div class="container">
-        <p>Releu 7</p>
+        <p>Prize boxe [7]</p>
         <label class="switch">
             <input type="checkbox" id="relay_6">
             <span class="slider"></span>
@@ -127,7 +128,7 @@
     </div>
 
     <div class="container">
-        <p>Releu 8</p>
+        <p>Spate scena priza [8]</p>
         <label class="switch">
             <input type="checkbox" id="relay_7">
             <span class="slider"></span>
@@ -135,7 +136,7 @@
     </div>
 
     <div class="container">
-        <p>Releu 9</p>
+        <p>Prize buza balcon [9]</p>
         <label class="switch">
             <input type="checkbox" id="relay_8">
             <span class="slider"></span>
@@ -143,7 +144,7 @@
     </div>
 
     <div class="container">
-        <p>Releu 10</p>
+        <p>Neconectat [10]</p>
         <label class="switch">
             <input type="checkbox" id="relay_9">
             <span class="slider"></span>
@@ -151,7 +152,7 @@
     </div>
 
     <div class="container">
-        <p>Releu 11</p>
+        <p>... ? [11]</p>
         <label class="switch">
             <input type="checkbox" id="relay_10">
             <span class="slider"></span>
@@ -159,7 +160,7 @@
     </div>
 
     <div class="container">
-        <p>Releu 12</p>
+        <p>Lumina balcon [12]</p>
         <label class="switch">
             <input type="checkbox" id="relay_11">
             <span class="slider"></span>
@@ -167,7 +168,7 @@
     </div>
 
     <div class="container">
-        <p>Activeaza/dezactiveaza hardware interrupts</p>
+        <p>Hardware interrupts</p>
         <label class="switch">
             <input type="checkbox" id="interrupts_button">
             <span class="slider"></span>
@@ -179,7 +180,7 @@
         var socket = io();
         let relay_buttons = [];
         let interrupts_button = document.getElementById('interrupts_button');
-        
+
         for (let i = 0; i < 12; i++) {
             relay_buttons[i] = document.getElementById(`relay_${i}`);
             relay_buttons[i].checked = false;
