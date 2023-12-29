@@ -32,21 +32,17 @@ const unsigned long BUTTON_DEBOUNCE_DELAY = 150;
 
 struct AES_ctx aes_ctx;
 
-uint8_t AES_KEY[] = { 0x8d, 0x77, 0xbc, 0x6d, 0xdd, 0xb0, 0xde, 0x6a, 0xd6, 0x88, 0xbf, 0x76, 0xf2, 0xc7, 0x62, 0x2f,
-                      0xf7, 0x6f, 0xfd, 0x31, 0xa0, 0xc5, 0xe3, 0x3d, 0x70, 0x4a, 0x1f, 0xf0, 0x05, 0xf4, 0xaa, 0x9c };
+uint8_t AES_KEY[] = { 0xe0, 0x81, 0x83, 0x3e, 0xfd, 0xc4, 0xc9, 0xb0, 0x13, 0x21, 0x72, 0x73, 0x9d, 0x87, 0xde, 0xea, 0xcc, 0x82, 0x91, 0x59, 0x41, 0x54, 0xc1, 0x32, 0xea, 0xaf, 0x96, 0xa9, 0xfc, 0x4f, 0x4a, 0x2e };
 
-uint8_t HMAC_KEY[] = { 0x2e, 0x1b, 0xb4, 0xf7, 0x87, 0xe4, 0xc6, 0xb2, 0x8c, 0x9b, 0xdc, 0x7b, 0x0e, 0x7b, 0xf2, 0x69,
-                       0x41, 0x19, 0xf6, 0xa6, 0xd6, 0xf1, 0x1c, 0xdf, 0x52, 0xf2, 0x6d, 0x0f, 0x0a, 0x92, 0xb9, 0xbe,
-                       0x85, 0xee, 0xe3, 0x58, 0x5b, 0xf6, 0xbc, 0x91, 0x07, 0x65, 0x9c, 0x4a, 0xa5, 0x10, 0x8a, 0x95,
-                       0xbb, 0xf0, 0xba, 0x0a, 0x9e, 0x45, 0x38, 0xe7, 0x86, 0x4a, 0xac, 0x71, 0xb0, 0x34, 0xf1, 0x06 };
+uint8_t HMAC_KEY[] = { 0x33, 0x1a, 0xc5, 0x1c, 0x39, 0xd5, 0x46, 0xd5, 0x9d, 0x91, 0x03, 0xc6, 0x40, 0x82, 0x9c, 0xf8, 0x3f, 0x6f, 0x0b, 0xa0, 0x78, 0x39, 0x30, 0x78, 0x19, 0x53, 0x40, 0x21, 0xb6, 0x50, 0x24, 0x48, 0x5a, 0x29, 0xae, 0xb2, 0xa8, 0xe9, 0xd5, 0x37, 0xbf, 0x8b, 0x54, 0xfe, 0xa6, 0xb7, 0xe6, 0x6d, 0x7d, 0x34, 0xff, 0x2a, 0x0e, 0xe9, 0xa5, 0xc1, 0xff, 0xf5, 0x8f, 0x66, 0xd7, 0xbb, 0x61, 0x0b };
 
 // which Opta is the code running on? (0, 1 or 2)
-const int OPTA_NUMBER = 0;
+const int OPTA_NUMBER = 2;
 
 uint8_t ips[3][4] = {
-  { 192, 168, 0, 177 },
-  { 192, 168, 0, 178 },
-  { 192, 168, 0, 179 }
+  { 192, 168, 11, 177 },
+  { 192, 168, 11, 178 },
+  { 192, 168, 11, 179 }
 };
 
 // Ethernet local IP
@@ -80,7 +76,7 @@ uint8_t relay_latched_states[] = {0, 0, 0, 0};
 bool    relays_latched         = false;
 
 // API
-const char* API_SERVER_IP   = "192.168.0.185";
+const char* API_SERVER_IP   = "192.168.11.214";
 const char* API_SERVER_URL  = "/api";
 int         API_SERVER_PORT = 80;
 
@@ -108,18 +104,21 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(BTN_USER), master_button_isr, RISING);
 
   Ethernet.begin(ip);
-  server.begin();
-  Udp.begin(UDP_PORT);
 
-  srand((unsigned int) time(NULL));
-
-  rtc_sync();
+  if (Ethernet.linkStatus() == LinkON) {
+    server.begin();
+    Udp.begin(UDP_PORT);
+    rtc_sync();
+    srand((unsigned int) time(NULL));
+  }
 }
  
 void loop() {
-  Ethernet.maintain();
-  http_server_loop();
-  rtc_check_for_sync();
+  if (Ethernet.linkStatus() == LinkON) {
+    Ethernet.maintain();
+    http_server_loop();
+    rtc_check_for_sync();
+  }
   buttons_press_listener();
   master_button_press_listener();
   master_button_check_for_unlatch();
@@ -305,12 +304,28 @@ void buttons_press_listener() {
     if (millis() - button_last_debounce[i] < BUTTON_DEBOUNCE_DELAY) continue;
     button_last_debounce[i] = millis();
 
-    uint8_t counter = relay_states[2 * i] << 1 | relay_states[2 * i + 1];
-    counter = (counter + 1) & 3;
-    set_relay_state(2 * i,     counter >> 1);
-    set_relay_state(2 * i + 1, counter & 1);
+    uint8_t a, b;
+    a = relay_states[2 * i];
+    b = relay_states[2 * i + 1];
 
-    api_send(RELAY_STATES_CHANGED);
+    if (a == 0 && b == 0) {
+      a = 1;
+      b = 0;
+    } else if (a == 1 && b == 0) {
+      a = 1;
+      b = 1;
+    } else if (a == 1 && b == 1) {
+      a = 0;
+      b = 1;
+    } else if (a == 0 && b == 1) {
+      a = 0;
+      b = 0;
+    }
+
+    set_relay_state(2 * i,     a);
+    set_relay_state(2 * i + 1, b);
+
+    if (Ethernet.linkStatus() == LinkON) api_send(RELAY_STATES_CHANGED);
   }
 }
 
@@ -324,7 +339,7 @@ void master_button_press_listener() {
   if (!api_button_interrupts_enabled) {
     attach_button_interrupts();
     api_button_interrupts_enabled = true;
-    api_send(ENABLE_BUTTON_INTERRUPTS);
+    if (Ethernet.linkStatus() == LinkON) api_send(ENABLE_BUTTON_INTERRUPTS);
     return;
   }
 
@@ -357,7 +372,7 @@ void master_button_check_for_unlatch() {
 
     attach_button_interrupts();
 
-    api_send(RELAY_STATES_CHANGED);
+    if (Ethernet.linkStatus() == LinkON) api_send(RELAY_STATES_CHANGED);
   }
 }
 
